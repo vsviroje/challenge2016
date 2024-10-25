@@ -120,25 +120,21 @@ func validateDistrubutionLocation(ele distributor, locationData *locationData) *
 					locAllowed.cityLevel = false
 					return locAllowed
 				}
-				locAllowed.cityLevel = false
-				if ele.parentDistributorName != "" {
+				if ele.parentDistributorName != "" { // it will go to search in included map
 					return locAllowed
 				}
-
-			} else if isStateOk && len(cityList) == 0 {
+			} else if isStateOk && len(cityList) == 0 { //mark all cities as not allowed
 				locAllowed.cityLevel = false
 				return locAllowed
 			}
-			locAllowed.stateLevel = false
-			if ele.parentDistributorName != "" {
+			if ele.parentDistributorName != "" { // it will go to search in included map
 				return locAllowed
 			}
-		} else if isCountryOk && len(stateList) == 0 {
+		} else if isCountryOk && len(stateList) == 0 { //mark all states as not allowed
 			locAllowed.stateLevel = false
 			return locAllowed
 		}
-		locAllowed.countryLevel = false
-		if ele.parentDistributorName != "" {
+		if ele.parentDistributorName != "" { // it will go to search in included map
 			return locAllowed
 		}
 	}
@@ -158,13 +154,13 @@ func validateDistrubutionLocation(ele distributor, locationData *locationData) *
 			}
 			locAllowed.cityLevel = false
 			return locAllowed
-		} else if isStateOk && len(cityList) == 0 {
+		} else if isStateOk && len(cityList) == 0 { //mark all cities as allowed
 			locAllowed.cityLevel = true
 			return locAllowed
 		}
 		locAllowed.stateLevel = false
 		return locAllowed
-	} else if isCountryOk && len(stateList) == 0 {
+	} else if isCountryOk && len(stateList) == 0 { //mark all states as allowed
 		locAllowed.stateLevel = true
 		return locAllowed
 	}
