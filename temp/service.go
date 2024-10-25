@@ -2,6 +2,7 @@ package temp
 
 import (
 	"errors"
+	"fmt"
 )
 
 func AddCinemaLocToDistribution(distributorName string, cinemaLocation string, isExcludeData bool,
@@ -77,63 +78,94 @@ func IsDistributionAllowed(distributorName string, cinemaLocation string) error 
 		return err
 	}
 
-	if !validateDistrubutionLocation(ele, locationData) {
-		return errors.New("distrubution not allowed")
+	locaValidDetails := validateDistrubutionLocation(ele, locationData)
+	fmt.Println(locaValidDetails)
+	if (locationData.len == 3 && !(locaValidDetails.countryLevel && locaValidDetails.stateLevel && locaValidDetails.cityLevel)) ||
+		(locationData.len == 2 && !(locaValidDetails.countryLevel && locaValidDetails.stateLevel)) ||
+		(locationData.len == 1 && !(locaValidDetails.countryLevel)) {
+		return errors.New("distrubutor not allowed")
 	}
 
 	return nil
 }
 
-func validateDistrubutionLocation(ele distributor, locationData *locationData) bool {
-	isAllowed := false
+func validateDistrubutionLocation(ele distributor, locationData *locationData) *locationAllowed {
+	var locAllowed *locationAllowed
+
 	if ele.parentDistributorName != "" {
-		isAllowed = validateDistrubutionLocation(distributorData[ele.parentDistributorName], locationData)
+		locAllowed = validateDistrubutionLocation(distributorData[ele.parentDistributorName], locationData)
+		fmt.Println(locAllowed)
 	}
 
-	if isAllowed {
-		stateList, isStateOk := ele.excluded[locationData.countryName]
-		if isStateOk && len(stateList) > 0 {
+	if locAllowed == nil {
+		locAllowed = &locationAllowed{}
+	}
 
-			cityList, isCityOk := ele.excluded[locationData.countryName][locationData.stateName]
-			if isCityOk && len(cityList) > 0 {
+	if (locationData.len == 3 && (locAllowed.countryLevel && locAllowed.stateLevel && locAllowed.cityLevel)) ||
+		(locationData.len == 2 && (locAllowed.countryLevel && locAllowed.stateLevel)) ||
+		(locationData.len == 1 && (locAllowed.countryLevel)) ||
+		ele.parentDistributorName == "" {
 
-				temp, isOk := ele.excluded[locationData.countryName][locationData.stateName][locationData.cityName]
-				if isOk && temp != nil {
-					return false
+		locAllowed.countryLevel = false
+		stateList, isCountryOk := ele.excluded[locationData.countryName]
+		if isCountryOk && len(stateList) > 0 {
+			locAllowed.stateLevel = false
+
+			cityList, isStateOk := ele.excluded[locationData.countryName][locationData.stateName]
+			if isStateOk && len(cityList) > 0 {
+				locAllowed.cityLevel = false
+
+				city, isCityOk := ele.excluded[locationData.countryName][locationData.stateName][locationData.cityName]
+				if isCityOk && city != nil {
+					return locAllowed
 				}
-				return true
+				locAllowed.cityLevel = true
+				if ele.parentDistributorName != "" {
+					return locAllowed
+				}
 
-			} else if isCityOk && len(cityList) == 0 {
-				return false
+			} else if isStateOk && len(cityList) == 0 {
+				return locAllowed
 			}
-			return true
-
-		} else if isStateOk && len(stateList) == 0 {
-			return false
+			locAllowed.stateLevel = true
+			if ele.parentDistributorName != "" {
+				return locAllowed
+			}
+		} else if isCountryOk && len(stateList) == 0 {
+			return locAllowed
 		}
-		return true
+		locAllowed.countryLevel = true
+		if ele.parentDistributorName != "" {
+			return locAllowed
+		}
 	}
 
-	stateList, isStateOk := ele.included[locationData.countryName]
-	if isStateOk && len(stateList) > 0 {
+	locAllowed.countryLevel = true
+	stateList, isCountryOk := ele.included[locationData.countryName]
+	if isCountryOk && len(stateList) > 0 {
+		locAllowed.stateLevel = true
 
-		cityList, isCityOk := ele.included[locationData.countryName][locationData.stateName]
-		if isCityOk && len(cityList) > 0 {
+		cityList, isStateOk := ele.included[locationData.countryName][locationData.stateName]
+		if isStateOk && len(cityList) > 0 {
+			locAllowed.cityLevel = true
 
-			temp, isOk := ele.included[locationData.countryName][locationData.stateName][locationData.cityName]
-			if isOk && temp != nil {
-				return true
+			city, isCityOk := ele.included[locationData.countryName][locationData.stateName][locationData.cityName]
+			if isCityOk && city != nil {
+				return locAllowed
 			}
-			return false
-
-		} else if isCityOk && len(cityList) == 0 {
-			return true
+			locAllowed.cityLevel = false
+			return locAllowed
+		} else if isStateOk && len(cityList) == 0 {
+			locAllowed.cityLevel = true
+			return locAllowed
 		}
-		return false
-
-	} else if isStateOk && len(stateList) == 0 {
-		return true
+		locAllowed.stateLevel = false
+		return locAllowed
+	} else if isCountryOk && len(stateList) == 0 {
+		locAllowed.stateLevel = true
+		return locAllowed
 	}
-	return false
+	locAllowed.countryLevel = false
+	return locAllowed
 
 }

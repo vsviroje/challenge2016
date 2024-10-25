@@ -55,7 +55,9 @@ func GetInputFromConsole() string {
 
 func getLocationData(cinemaLocation string) (*locationData, error) {
 	var ele locationData
+
 	data := strings.Split(cinemaLocation, "-")
+	ele.len = len(data)
 
 	if len(data) == 3 {
 		ele.countryName = data[0]
