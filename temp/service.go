@@ -120,6 +120,7 @@ func validateDistrubutionLocation(ele distributor, locationData *locationData) *
 					locAllowed.cityLevel = false
 					return locAllowed
 				}
+				locAllowed.cityLevel = false
 				if ele.parentDistributorName != "" {
 					return locAllowed
 				}
@@ -128,6 +129,7 @@ func validateDistrubutionLocation(ele distributor, locationData *locationData) *
 				locAllowed.cityLevel = false
 				return locAllowed
 			}
+			locAllowed.stateLevel = false
 			if ele.parentDistributorName != "" {
 				return locAllowed
 			}
@@ -135,6 +137,7 @@ func validateDistrubutionLocation(ele distributor, locationData *locationData) *
 			locAllowed.stateLevel = false
 			return locAllowed
 		}
+		locAllowed.countryLevel = false
 		if ele.parentDistributorName != "" {
 			return locAllowed
 		}
