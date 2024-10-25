@@ -106,35 +106,35 @@ func validateDistrubutionLocation(ele distributor, locationData *locationData) *
 		(locationData.len == 1 && (locAllowed.countryLevel)) ||
 		ele.parentDistributorName == "" {
 
-		locAllowed.countryLevel = false
+		locAllowed.countryLevel = true
 		stateList, isCountryOk := ele.excluded[locationData.countryName]
 		if isCountryOk && len(stateList) > 0 {
-			locAllowed.stateLevel = false
+			locAllowed.stateLevel = true
 
 			cityList, isStateOk := ele.excluded[locationData.countryName][locationData.stateName]
 			if isStateOk && len(cityList) > 0 {
-				locAllowed.cityLevel = false
+				locAllowed.cityLevel = true
 
 				city, isCityOk := ele.excluded[locationData.countryName][locationData.stateName][locationData.cityName]
 				if isCityOk && city != nil {
+					locAllowed.cityLevel = false
 					return locAllowed
 				}
-				locAllowed.cityLevel = true
 				if ele.parentDistributorName != "" {
 					return locAllowed
 				}
 
 			} else if isStateOk && len(cityList) == 0 {
+				locAllowed.cityLevel = false
 				return locAllowed
 			}
-			locAllowed.stateLevel = true
 			if ele.parentDistributorName != "" {
 				return locAllowed
 			}
 		} else if isCountryOk && len(stateList) == 0 {
+			locAllowed.stateLevel = false
 			return locAllowed
 		}
-		locAllowed.countryLevel = true
 		if ele.parentDistributorName != "" {
 			return locAllowed
 		}
